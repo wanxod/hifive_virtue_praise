@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.85, maximum-scale=1.0, user-scalable=no">
+    <title>나의 가치 보석함</title>
+    <style>
+        /* 깔끔함이 검증된 오리지널 이서윤체 디자인 스킨 */
+        * {
+            font-family: '이서윤체', '흥국생명 이서윤체', 'HKLeeseoyun', '맑은 고딕', sans-serif !important;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #fcf9f2;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* 모바일 스크롤 바 차단 */
+        }
+
+        /* 화사한 화이트 바탕 + 핑크 대쉬 테두리 부모 카드 */
+        .student-main-card-frame {
+            width: 100%;
+            max-width: 440px; 
+            background: white;
+            border-radius: 20px;
+            padding: 20px 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            border: 3px dashed #ff8b94; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* [★완벽 교정] 지정해주신 정확한 위치의 띄어쓰기 밸런스 반영 */
+        h1 {
+            font-size: min(23px, 5.2vw); 
+            margin: 5px 0 20px 0;
+            white-space: nowrap; /* 무조건 한 줄 유지 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333; 
+            letter-spacing: -0.3px;
+        }
+        
+        /* 이름 컬러 포인트 */
+        .name-purple { color: #9b59b6; }    
+        /* 가치 보석 분홍색 복구 */
+        .value-default { color: #ff6b76; font-weight: bold; }  
+        /* 칭찬 통장 파란색 복구 */
+        .bank-blue { color: #3498db; }      
+
+        /* 좌우 여백 칼대칭 병렬 레이아웃 */
+        .side-by-side-equal-layout {
+            display: flex;
+            width: 100%;
+            padding: 0 5px; 
+            gap: 8px; 
+            justify-content: center; 
+            align-items: stretch;
+        }
+
+        /* [좌측] 가치 보석함 구역 */
+        .jewel-box-left-zone {
+            width: 63%;
+            background: #ffffff;
+            border: 2px dashed #ffb3ba;
+            border-radius: 15px;
+            padding: 10px 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 10개 한 줄 정렬 격자판 */
+        .grid-10-columns {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr); 
+            gap: 2px; 
+            width: 100%;
+            justify-items: center;
+            align-items: center;
+        }
+
+        .slot-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .circle-jewel-core {
+            width: 22px; 
+            height: 23px;
+            border-radius: 50% !important; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        .jewel-caption-label {
+            font-size: 9px;
+            font-weight: bold;
+            margin-top: 3px;
+            color: #444;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .circle-empty-core {
+            width: 22px;
+            height: 23px;
+            border-radius: 50% !important;
+            background: #f5f5f5;
+            border: 1px dashed #ccc;
+        }
+
+        /* [우측] 나의 가치 배지함 구역 */
+        .badge-box-right-zone {
+            width: 37%;
+            background: #ffffff;
+            border: 2px dashed #117a65; 
+            border-radius: 15px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .badge-header-text {
+            color: #117a65;
+            font-size: 15px;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+            border-bottom: 2px solid #a3e4d7;
+            width: 100%;
+            padding-bottom: 4px;
+            text-align: center;
+        }
+
+        .badge-scroll-wrapper {
+            width: 100%;
+            height: 140px; 
+            overflow-y: auto; 
+        }
+
+        .mini-badge-pill {
+            background-color: #e8f8f5;
+            border: 1px solid #a3e4d7;
+            color: #117a65;
+            padding: 5px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 5px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .no-badge-notice {
+            font-size: 10px;
+            color: #aaa;
+            font-style: italic;
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .device-fit-footer {
+            margin-top: 15px;
+            font-size: 11px;
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="student-main-card-frame">
+        <h1>
+            ✨<span id="sNameDisplay" class="name-purple">우리반</span>의 <span class="value-default">가치 보석</span>💎<span class="bank-blue">칭찬 통장</span>✨
+        </h1>
+
+        <div class="side-by-side-equal-layout">
+            <div class="jewel-box-left-zone">
+                <div class="grid-10-columns" id="jewelGridDisplay"></div>
+            </div>
+
+            <div class="badge-box-right-zone">
+                <div class="badge-header-text">🏅 가치 배지</div>
+                <div class="badge-scroll-wrapper" id="badgeListDisplay"></div>
+            </div>
+        </div>
+
+        <div class="device-fit-footer">* 스마트폰 화면 비율에 맞춤 고정된 화면입니다.</div>
+    </div>
+
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const studentNames = ["강채원","구강민","권지윤","김규민","김단우","김시율","김은호","노규비","문채민","박서우","박세담","백주은","손현우","신채현","심하준","윤강현","이루나","이루아","전은지","정유나","정재이","정하늘","조우성","진주완","최혜린","하재율","하태준","황정원"];
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const studentId = parseInt(getQueryParam('id'));
+            
+            if (studentId && studentId >= 1 && studentId <= studentNames.length) {
+                const currentName = studentNames[studentId - 1];
+                document.getElementById('sNameDisplay').innerText = currentName;
+            } else {
+                document.getElementById('sNameDisplay').innerText = "우리반";
+            }
+
+            const savedData = localStorage.getItem('highfive_praise_system_v6_batch');
+            let studentInventory = [];
+            let studentBadges = [];
+
+            if (savedData && studentId) {
+                const parsed = JSON.parse(savedData);
+                const targetStudent = parsed.students.find(s => s.id === studentId);
+                if (targetStudent) {
+                    studentInventory = targetStudent.inventory || [];
+                    studentBadges = targetStudent.badges || [];
+                }
+            }
+
+            // 1. 보석 렌더링
+            const grid = document.getElementById('jewelGridDisplay');
+            grid.innerHTML = '';
+            
+            studentInventory.forEach(jewel => {
+                grid.innerHTML += `
+                    <div class="slot-container">
+                        <div class="circle-jewel-core" style="background-color: ${jewel.color};">${jewel.icon}</div>
+                        <div class="jewel-caption-label">${jewel.name}</div>
+                    </div>
+                `;
+            });
+
+            // 빈 칸 채우기 (최소 30칸)
+            const totalDisplaySlots = Math.max(30, Math.ceil(studentInventory.length / 10) * 10);
+            const emptyCount = totalDisplaySlots - studentInventory.length;
+            for (let i = 0; i < emptyCount; i++) {
+                grid.innerHTML += `
+                    <div class="slot-container">
+                        <div class="circle-empty-core"></div>
+                        <div class="jewel-caption-label" style="color:transparent;">-</div>
+                    </div>
+                `;
+            }
+
+            // 2. 배지 렌더링
+            const badgeWrapper = document.getElementById('badgeListDisplay');
+            badgeWrapper.innerHTML = '';
+            if (studentBadges.length === 0) {
+                badgeWrapper.innerHTML = `<p class="no-badge-notice">보석을 모으면<br>여기에 배지가<br>나타나요! ⭐</p>`;
+            } else {
+                studentBadges.forEach(b => {
+                    badgeWrapper.innerHTML += `<div class="mini-badge-pill">🏅 ${b.name}</div>`;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
