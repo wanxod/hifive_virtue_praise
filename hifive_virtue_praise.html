@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>하이파이브 가치 보석 칭찬 통장</title>
+    <style>
+        /* 선생님이 가장 좋아하시는 오리지널 이서윤체 디자인 스킨 */
+        * { font-family: '이서윤체', '흥국생명 이서윤체', 'HKLeeseoyun', '맑은 고딕', sans-serif !important; }
+        :root { --bg-color: #fcf9f2; --text-color: #333; --primary-color: #ff8b94; }
+        body { font-size: 24px; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; text-align: center; position: relative; }
+        h1 { margin-bottom: 30px; margin-top: 60px; font-size: 39px; }
+        h1 .title-green { color: #2ecc71; } h1 .title-default { color: #ff6b76; } h1 .title-purple { color: #9b59b6; }
+        
+        /* 상단 관리자 메뉴 바 정돈 */
+        .top-management-bar { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 10; }
+        .action-btn { border: none; padding: 12px 22px; font-size: 21px; font-weight: bold; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s; }
+        .action-btn:active { transform: scale(0.95); }
+        .btn-save { background-color: #2ecc71; color: white; }
+        .btn-student-mgr { background-color: #e67e22; color: white; } /* 학생 관리 버튼 */
+        .btn-qr { background-color: #f1c40f; color: #333; }
+        .btn-backup-hub { background-color: #3498db; color: white; }
+        .btn-undo { background-color: #e74c3c; color: white; }
+        .btn-badge-mgr { background-color: #e28fc7; color: white; }
+        
+        /* 보석 대시보드 구역 */
+        .jewel-container { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 40px; padding: 20px; background: white; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .jewel-btn { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s; }
+        .jewel-btn:hover { transform: scale(1.1); }
+        .jewel-icon { width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 40% !important; }
+        .jewel-name { font-weight: bold; font-size: 21px; }
+        
+        /* 원래 예뻤던 보석 추가 둥근 점선 버튼 */
+        .jewel-add-btn { width: 55px; height: 55px; border-radius: 40% !important; border: 2px dashed #ff8b94; background-color: #fff5f6; color: #ff6b76; font-size: 32px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.03); margin-bottom: 28px; }
+        .jewel-add-btn:hover { transform: scale(1.1); background-color: #ff8b94; color: white; }
+
+        /* 학생 그리드판 */
+        .student-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 15px; max-width: 1100px; margin: 0 auto; }
+        .student-card { background: white; border-radius: 15px; width: 100%; aspect-ratio: 1 / 0.8; border: 2px dashed #ffb3ba; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.03); transition: all 0.2s; padding: 5px; }
+        .student-card:hover { transform: translateY(-3px); border: 2px dashed #ff4757; background-color: #fffafd; }
+        .student-name { font-size: 25px; font-weight: bold; } .student-count { margin-top: 4px; font-size: 24px; font-weight: bold; color: #222222; }
+
+        /* 모달 팝업 레이아웃 및 폼 스킨 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 95%; max-width: 1100px; max-height: 90vh; overflow-y: auto; position: relative; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 32px; cursor: pointer; color: #999; }
+        .pop-two-column-layout { display: flex; gap: 25px; margin-top: 20px; text-align: left; }
+        .pop-left-jewel-zone { flex: 0 0 65%; }
+        .pop-right-badge-zone { flex: 0 0 35%; border-left: 2px dashed #ff8b94; padding: 0 20px 0 25px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        
+        /* 모달 내 전용 기능 버튼 컴포넌트 */
+        .btn-inline-util { border: none; padding: 6px 14px; font-size: 16px; border-radius: 6px; font-weight: bold; cursor: pointer; vertical-align: middle; margin-left: 10px; color: white; }
+        .btn-color-red { background-color: #e74c3c; }
+        .btn-color-gray { background-color: #7f8c8d; }
+        .btn-color-orange { background-color: #e67e22; }
+        
+        /* 캡처 화면 양식 그대로 이식한 입력폼 컨테이너 */
+        .captured-input-box { text-align: left; background: #f9f9f9; padding: 20px; border-radius: 12px; margin: 15px 0; border: 1px solid #eee; }
+        .captured-input-box label { display: block; font-weight: bold; font-size: 20px; margin-bottom: 8px; color: #333; }
+        .captured-input-box input[type="text"] { width: 100%; padding: 10px; font-size: 18px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
+        .captured-submit-btn { width: 100%; background-color: #2ecc71; color: white; border: none; padding: 14px; font-size: 22px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        
+        /* 관리용 리스트 레이아웃 */
+        .mgr-list-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 19px; }
+        .mgr-list-table th, .mgr-list-table td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        .mgr-list-table th { background: #f2f2f2; }
+
+        .student-checkbox-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .student-checkbox-item { display: flex; align-items: center; gap: 5px; padding: 5px; font-size:20px; }
+        .bank-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; background: #fcfcfc; padding: 15px; border-radius: 15px; border: 2px dashed #ccc; }
+        .bank-slot { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .bank-circle { width: 48px; height: 48px; border-radius: 40% !important; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .bank-label { font-size: 14px; margin-top: 4px; font-weight: bold; }
+        .bank-date { font-size: 11px; color: #999; }
+        .submit-btn { background-color: #ff8b94; color: white; border: none; padding: 12px 30px; font-size: 26px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .sub-util-btn { font-size: 21px !important; padding: 6px 12px; cursor: pointer; border-radius: 6px; border: 1px solid #ccc; background: #fff; }
+        .interactive-title-circle { cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 65px; height: 65px; border-radius: 40%; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-right: 10px; vertical-align: middle; }
+        .qr-grid-five { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-top: 20px; }
+        .qr-card-box { background: #fdfbfc; padding: 12px; border-radius: 12px; border: 2px dashed #e28fc7; text-align: center; }
+        .qr-student-name-text { font-weight: bold; font-size: 22px !important; margin-bottom: 10px; }
+        .qr-display-img { width: 100%; max-width: 115px; cursor: pointer; }
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 20px; table-layout: fixed; }
+        .history-table th, .history-table td { padding: 12px; border: 1px solid #ddd; text-align: center; word-wrap: break-word; }
+        .history-table th { background-color: #f2f2f2; }
+        .btn-row-delete { background-color: #e74c3c; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 19px; }
+    </style>
+</head>
+<body>
+    <div id="teacherView">
+        <div class="top-management-bar">
+            <button class="action-btn btn-save" onclick="saveData()">저장</button>
+            <button class="action-btn btn-student-mgr" onclick="openStudentManagerModal()">👤 학생 관리</button>
+            <button class="action-btn btn-qr" onclick="openAllQrModal()">전체 QR</button>
+            <button class="action-btn btn-backup-hub" onclick="openBackupCenterModal()">데이터 백업/복구</button>
+            <button class="action-btn btn-badge-mgr" onclick="openBadgeManagerModal()">배지 관리</button>
+            <button class="action-btn btn-undo" onclick="openUndoManagerModal()">실행 취소</button>
+        </div>
+        <h1><span class="title-green">하이파이브</span> <span class="title-default">가치 보석💎</span> <span class="title-purple">칭찬 통장</span></h1>
+        
+        <div class="jewel-container" id="jewelContainer"></div>
+        <div class="student-grid" id="studentGrid"></div>
+    </div>
+
+    <div class="modal-overlay" id="addJewelModal">
+        <div class="modal-content" style="max-width:520px;">
+            <span class="close-btn" onclick="closeModal('addJewelModal')">&times;</span>
+            <h2 style="font-size:28px; margin-bottom:15px;">✨ 새로운 가치 보석 추가</h2>
+            <div class="captured-input-box">
+                <label>1. 보석 가치 이름 입력:</label>
+                <input type="text" id="newJewelNameInput" placeholder="예: 협동, 나눔">
+                
+                <label>2. 대표 아이콘 입력:</label>
+                <input type="text" id="newJewelIconInput" placeholder="예: 🔮, ⭐">
+            </div>
+            <button class="captured-submit-btn" onclick="submitNewJewelType()">보석 추가하기</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="awardModal">
+        <div class="modal-content" style="max-width:650px;">
+            <span class="close-btn" onclick="closeModal('awardModal')">&times;</span>
+            <h2>
+                <div id="awardTitleCircle" class="interactive-title-circle"></div>
+                <span id="awardTitleText">보석</span>
+                <button class="btn-inline-util btn-color-red" onclick="deleteCurrentJewelType()">❌ 종류 삭제</button>
+            </h2>
+            <div style="margin: 15px 0; background:#f9f9f9; padding:15px; border-radius:10px;">
+                <label>부여할 개수: </label>
+                <input type="number" id="jewelCount" value="1" min="1" max="10" style="width: 60px; text-align: center;"><br><br>
+                <label>칭찬 내용: </label>
+                <input type="text" id="jewelReason" style="width: 80%; padding: 8px;" placeholder="예: 약속 시간에 늦지 않음">
+            </div>
+            <div style="text-align: right;"><button class="sub-util-btn" onclick="toggleAllStudents()">전체 선택/해제</button></div>
+            <div class="student-checkbox-grid" id="checkboxGrid"></div>
+            <button class="submit-btn" onclick="submitAward()">칭찬하기!</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="bankModal">
+        <div class="modal-content" style="max-width:1150px;">
+            <span class="close-btn" onclick="closeModal('bankModal')">&times;</span>
+            <h2>
+                <span id="bankTitle">통장</span>
+                <button class="btn-inline-util btn-color-gray" onclick="hideCurrentStudent()">👁️ 학생 숨기기</button>
+            </h2>
+            <div class="pop-two-column-layout">
+                <div class="pop-left-jewel-zone">
+                    <div style="font-size:24px; color:#ff8b94; font-weight:bold;">총 <span id="totalJewels">0</span>개</div>
+                    <div class="bank-grid" id="bankGrid"></div>
+                </div>
+                <div class="pop-right-badge-zone"><h3>🏅 배지</h3><div id="studentBadgeDashboardList"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="studentManagerModal">
+        <div class="modal-content" style="max-width:750px;">
+            <span class="close-btn" onclick="closeModal('studentManagerModal')">&times;</span>
+            <h2 style="font-size:28px; margin-bottom:20px;">👤 우리반 학생 관리 대장</h2>
+            <div style="background:#f5f5f5; padding:15px; border-radius:12px; text-align:left; margin-bottom:20px;">
+                <label style="font-weight:bold; font-size:19px;">➕ 전입 학생 추가 개설</label><br>
+                <input type="text" id="mgrNewStudentName" placeholder="새 학생 이름 입력" style="padding:8px; font-size:18px; width:60%; border-radius:6px; border:1px solid #ccc; margin-top:8px;">
+                <button class="btn-inline-util btn-color-orange" style="padding:8px 16px; font-size:18px;" onclick="submitAddStudentViaMgr()">학생 등록</button>
+            </div>
+            <div style="max-height:400px; overflow-y:auto;">
+                <table class="mgr-list-table">
+                    <thead>
+                        <tr><th>출석 번호</th><th>학생 이름</th><th>보석 개수</th><th>상태 제어</th></tr>
+                    </thead>
+                    <tbody id="mgrStudentListTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="undoManagerModal"><div class="modal-content" style="max-width: 1100px;"><span class="close-btn" onclick="closeModal('undoManagerModal')">&times;</span><h2>📋 기록 대장</h2><table class="history-table"><thead><tr><th>일시</th><th>보석</th><th>학생들</th><th>칭찬 내용</th><th>작업</th></tr></thead><tbody id="historyTableBody"></tbody></table></div></div>
+    <div class="modal-overlay" id="backupCenterModal"><div class="modal-content" style="max-width: 480px;"><span class="close-btn" onclick="closeModal('backupCenterModal')">&times;</span><h2>💾 백업 센터</h2><button onclick="exportDataBackup()">백업</button><button onclick="document.getElementById('hubImportFileTrigger').click()">복구</button><input type="file" id="hubImportFileTrigger" style="display:none;" onchange="importDataBackup(event)"></div></div>
+    <div class="modal-overlay" id="badgeManagerModal"><div class="modal-content" style="max-width: 500px;"><span class="close-btn" onclick="closeModal('badgeManagerModal')">&times;</span><h2>🏅 배지 규칙 관리</h2><button onclick="showBadgeSubSection('create')">생성</button><button onclick="showBadgeSubSection('auto')">자동설정</button><div id="subSecCreate" style="display:none;"><input type="text" id="newBadgeName"><button onclick="createNewBadgeMaster()">확인</button></div><div id="subSecAuto" style="display:none;"><select id="autoTargetBadge"></select><select id="autoTargetJewel"></select><input type="number" id="autoTargetCount" value="5"><button onclick="saveAutoRule()">저장</button></div><div id="masterBadgeRenderZone"></div></div></div>
+    <div class="modal-overlay" id="qrModal"><div class="modal-content" style="max-width: 900px;"><span class="close-btn" onclick="closeModal('qrModal')">&times;</span><h2>우리반 QR 코드 대장</h2><div class="qr-grid-five" id="qrGrid"></div></div></div>
+
+    <script>
+        let jewelsList = []; let batchHistory = [];
+        const defaultJewels = [
+            { id: 'j1', name: '성실', color: '#FFB3BA', icon: '🌱' }, { id: 'j2', name: '자율', color: '#FFDFBA', icon: '⛵' },
+            { id: 'j3', name: '용기', color: '#FFFFBA', icon: '🦁' }, { id: 'j4', name: '배려', color: '#BFFCC6', icon: '🤝' },
+            { id: 'j5', name: '용서', color: '#BAE1FF', icon: '🕊️' }, { id: 'j6', name: '반성', color: '#D4A5A5', icon: '🪞' },
+            { id: 'j7', name: '안전', color: '#E0BBE4', icon: '🦺' }, { id: 'j8', name: '질서', color: '#957DAD', icon: '🚦' },
+            { id: 'j9', name: '약속', color: '#FEC8D8', icon: '🤙' }, { id: 'j10', name: '친절', color: '#FFDFD3', icon: '🌸' },
+            { id: 'j11', name: '사랑', color: '#F8B195', icon: '❤️' }, { id: 'j12', name: '정직', color: '#F67280', icon: '⚖️' }
+        ];
+        const studentNames = ["강채원","구강민","권지윤","김규민","김단우","김시율","김은호","노규비","문채민","박서우","박세담","백주은","손현우","신채현","심하준","윤강현","이루나","이루아","전은지","정유나","정재이","정하늘","조우성","진주완","최혜린","하재율","하태준","황정원"];
+        let students = []; let masterBadges = []; let currentSelectedJewel = null; let currentViewStudent = null;
+
+        function getFormattedDate() { const today = new Date(); let mm = today.getMonth() + 1; let dd = today.getDate(); let hh = today.getHours(); let min = today.getMinutes(); if(mm<10) mm='0'+mm; if(dd<10) dd='0'+dd; if(hh<10) hh='0'+hh; if(min<10) min='0'+min; return `${today.getFullYear()}.${mm}.${dd}. ${hh}:${min}`; }
+        function saveData() { localStorage.setItem('highfive_praise_system_v6_batch', JSON.stringify({students, masterBadges, jewelsList, batchHistory})); alert('저장되었습니다!'); }
+        
+        function loadData() { 
+            const saved = localStorage.getItem('highfive_praise_system_v6_batch'); 
+            if (saved) { 
+                let parsed = JSON.parse(saved); 
+                students = parsed.students; 
+                masterBadges = parsed.masterBadges || []; 
+                jewelsList = parsed.jewelsList || defaultJewels; 
+                batchHistory = parsed.batchHistory || []; 
+                // 구버전 구원용 히든 기본값 스캔
+                students.forEach(s => { if(s.hidden === undefined) s.hidden = false; });
+            } else { 
+                students = studentNames.map((name, index) => ({ id: index + 1, name: name, inventory: [], badges: [], hidden: false })); 
+                jewelsList = defaultJewels; 
+                masterBadges = []; 
+                batchHistory = []; 
+            } 
+        }
+
+        document.addEventListener("DOMContentLoaded", function() { loadData(); renderJewels(); renderStudents(); renderCheckboxes(); });
+
+        /* 보석 렌더링 엔진 */
+        function renderJewels() { 
+            const container = document.getElementById('jewelContainer'); 
+            container.innerHTML = ''; 
+            jewelsList.forEach(j => { 
+                const btn = document.createElement('div'); 
+                btn.className = 'jewel-btn'; 
+                btn.onclick = () => openAwardModal(j); 
+                btn.innerHTML = `<div class="jewel-icon" style="background-color: ${j.color};">${j.icon}</div><div class="jewel-name">${j.name}</div>`; 
+                container.appendChild(btn); 
+            }); 
+            
+            // 원래 예뻤던 보석 종류 추가 플러스 원형 단추 배치 복구
+            const addBtn = document.createElement('div');
+            addBtn.className = 'jewel-add-btn';
+            addBtn.innerText = '+';
+            addBtn.onclick = () => document.getElementById('addJewelModal').style.display = 'flex';
+            container.appendChild(addBtn);
+        }
+
+        /* [★원상복구] 캡처 양식 그대로 새로운 보석 생성 실행 */
+        function submitNewJewelType() {
+            const nameField = document.getElementById('newJewelNameInput');
+            const iconField = document.getElementById('newJewelIconInput');
+            const name = nameField.value.trim();
+            const icon = iconField.value.trim();
+            
+            if(!name || !icon) { alert('보석 이름과 대표 아이콘을 모두 입력해 주세요!'); return; }
+            
+            const randomColors = ['#FFB3BA','#FFDFBA','#FFFFBA','#BFFCC6','#BAE1FF','#E0BBE4','#FEC8D8','#FFDFD3','#F8B195'];
+            const chosenColor = randomColors[Math.floor(Math.random() * randomColors.length)];
+            
+            jewelsList.push({ id: 'j_' + Date.now(), name: name, color: chosenColor, icon: icon });
+            renderJewels();
+            
+            nameField.value = ''; iconField.value = '';
+            closeModal('addJewelModal');
+            alert(`[${name}] 보석이 목록 우측 끝에 정상 추가되었습니다. 상단 [저장] 버튼을 눌러주세요!`);
+        }
+
+        /* 보석 단독 삭제 기능 */
+        function deleteCurrentJewelType() {
+            if(!currentSelectedJewel) return;
+            if(confirm(`⚠️ 정말로 [${currentSelectedJewel.name}] 보석 종류를 삭제하시겠습니까?`)) {
+                jewelsList = jewelsList.filter(j => j.id !== currentSelectedJewel.id);
+                closeModal('awardModal');
+                renderJewels();
+                alert(`[${currentSelectedJewel.name}] 보석 종류가 제거되었습니다. 상단 [저장] 버튼을 눌러 확정하세요!`);
+            }
+        }
+
+        /* [★변경] 메인 화면에는 hidden이 false인 (숨겨지지 않은) 학생만 깔끔하게 노출 */
+        function renderStudents() { 
+            const grid = document.getElementById('studentGrid'); 
+            grid.innerHTML = ''; 
+            students.forEach(s => { 
+                if(s.hidden) return; // 숨김 상태인 아이는 렌더링 패스
+                const card = document.createElement('div'); 
+                card.className = 'student-card'; 
+                card.onclick = () => openBankModal(s); 
+                card.innerHTML = `<div class="student-name">${s.id}. ${s.name}</div><div class="student-count">💎 ${s.inventory.length}개</div>`; 
+                grid.appendChild(card); 
+            }); 
+        }
+
+        /* [★추가] 기존 통장 창 내부에서 학생 숨기기 구동 */
+        function hideCurrentStudent() {
+            if(!currentViewStudent) return;
+            if(confirm(`[${currentViewStudent.name}] 학생을 메인 화면에서 숨기시겠습니까?\n숨겨진 학생은 '학생 관리' 창에서 다시 불러올 수 있습니다.`)) {
+                currentViewStudent.hidden = true;
+                closeModal('bankModal');
+                renderStudents();
+                renderCheckboxes();
+                alert(`${currentViewStudent.name} 학생이 숨김 처리되었습니다. 상단 [저장]을 눌러주세요!`);
+            }
+        }
+
+        /* [★신설] 우측 상단 전용 학생 관리 창 연동 제어 대장 */
+        function openStudentManagerModal() {
+            updateMgrStudentListTable();
+            document.getElementById('studentManagerModal').style.display = 'flex';
+        }
+
+        function updateMgrStudentListTable() {
+            const tbody = document.getElementById('mgrStudentListTableBody');
+            tbody.innerHTML = '';
+            students.forEach(s => {
+                const row = document.createElement('tr');
+                // 숨김 상태 여부에 따라 버튼 토글 분기
+                const toggleVisibilityBtn = s.hidden 
+                    ? `<button class="btn-inline-util" style="background:#2ecc71; margin:0 3px;" onclick="toggleStudentHiddenState(${s.id}, false)">👁️ 숨김 해제</button>`
+                    : `<button class="btn-inline-util" style="background:#7f8c8d; margin:0 3px;" onclick="toggleStudentHiddenState(${s.id}, true)">👁️ 숨기기</button>`;
+                
+                const deleteBtn = `<button class="btn-inline-util btn-color-red" style="margin:0 3px;" onclick="deleteStudentPermanently(${s.id})">❌ 영구 삭제</button>`;
+                
+                row.innerHTML = `<td><strong>${s.id}번</strong></td><td>${s.name} ${s.hidden ? '<span style="color:#e74c3c; font-size:14px;">(숨김됨)</span>':''}</td><td>💎 ${s.inventory.length}개</td><td>${toggleVisibilityBtn}${deleteBtn}</td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        function toggleStudentHiddenState(studentId, shouldHide) {
+            const student = students.find(s => s.id === studentId);
+            if(student) {
+                student.hidden = shouldHide;
+                updateMgrStudentListTable();
+                renderStudents();
+                renderCheckboxes();
+            }
+        }
+
+        function deleteStudentPermanently(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if(student && confirm(`⚠️ 경고! [${student.name}] 학생의 통장 내역과 데이터를 완전히 영구 삭제하시겠습니까?`)) {
+                students = students.filter(s => s.id !== studentId);
+                // 출석 번호 압축 재배열
+                students.forEach((s, idx) => { s.id = idx + 1; });
+                updateMgrStudentListTable();
+                renderStudents();
+                renderCheckboxes();
+            }
+        }
+
+        function submitAddStudentViaMgr() {
+            const nameInput = document.getElementById('mgrNewStudentName');
+            const name = nameInput.value.trim();
+            if(!name) return;
+            
+            const nextId = students.length + 1;
+            students.push({ id: nextId, name: name, inventory: [], badges: [], hidden: false });
+            nameInput.value = '';
+            
+            updateMgrStudentListTable();
+            renderStudents();
+            renderCheckboxes();
+            alert(`${nextId}번 [${name}] 새 학생이 등록되었습니다! 상단 [저장]을 눌러 원격 동기화하세요.`);
+        }
+
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+        
+        /* 칭찬 체크박스 리스트도 hidden 학생 제외 연동 */
+        function renderCheckboxes() { 
+            const grid = document.getElementById('checkboxGrid'); 
+            grid.innerHTML = ''; 
+            students.forEach(s => { 
+                if(s.hidden) return; // 숨겨진 아이는 체크 목록에서도 패스
+                grid.innerHTML += `<label class="student-checkbox-item"><input type="checkbox" class="student-cb" value="${s.id}"><span>${s.id}. ${s.name}</span></label>`; 
+            }); 
+        }
+
+        function openAwardModal(jewel) { currentSelectedJewel = jewel; document.getElementById('awardTitleText').innerText = `${jewel.name} 보석`; const circleHeader = document.getElementById('awardTitleCircle'); circleHeader.innerText = jewel.icon; circleHeader.style.backgroundColor = jewel.color; document.getElementById('jewelCount').value = 1; document.getElementById('jewelReason').value = ''; renderCheckboxes(); document.getElementById('awardModal').style.display = 'flex'; }
+        function toggleAllStudents() { const checkboxes = document.querySelectorAll('.student-cb'); const allChecked = Array.from(checkboxes).every(cb => cb.checked); checkboxes.forEach(cb => cb.checked = !allChecked); }
+        function submitAward() { const count = parseInt(document.getElementById('jewelCount').value); const reasonText = document.getElementById('jewelReason').value.trim() || "선생님의 따뜻한 칭찬이 부여되었습니다."; const checkboxes = document.querySelectorAll('.student-cb:checked'); if(checkboxes.length === 0) return; const awardDate = getFormattedDate(); const batchId = 'batch_' + Date.now(); let targetStudentList = []; checkboxes.forEach(cb => { const student = students.find(s => s.id === parseInt(cb.value)); targetStudentList.push({ id: student.id, name: student.name }); for(let i=0; i<count; i++) { student.inventory.push({ batchId: batchId, id: currentSelectedJewel.id, name: currentSelectedJewel.name, color: currentSelectedJewel.color, icon: currentSelectedJewel.icon, date: awardDate.split(" ")[0], reason: reasonText }); } }); batchHistory.push({ batchId: batchId, date: awardDate, jewelName: currentSelectedJewel.name, jewelIcon: currentSelectedJewel.icon, count: count, reason: reasonText, targetStudents: targetStudentList }); closeModal('awardModal'); renderStudents(); }
+        function openBankModal(student) { currentViewStudent = student; document.getElementById('bankTitle').innerText = `${student.name} 학생의 가치 보석함`; updateBankGridDisplay(); document.getElementById('bankModal').style.display = 'flex'; }
+        function updateBankGridDisplay() { document.getElementById('totalJewels').innerText = currentViewStudent.inventory.length; const bankGrid = document.getElementById('bankGrid'); bankGrid.innerHTML = ''; currentViewStudent.inventory.forEach((jewel) => { bankGrid.innerHTML += `<div class="bank-slot"><div class="bank-circle" style="background-color: ${jewel.color};">${jewel.icon}</div><div class="bank-label">${jewel.name}</div><div class="bank-date">${jewel.date}</div></div>`; }); }
+        
+        function openUndoManagerModal() {
+            const tbody = document.getElementById('historyTableBody'); tbody.innerHTML = '';
+            [...batchHistory].reverse().forEach(batch => {
+                let displayedNames = batch.targetStudents.length <= 3 ? batch.targetStudents.map(s => s.name).join(", ") : batch.targetStudents.slice(0, 3).map(s => s.name).join(", ") + ` 외 ${batch.targetStudents.length - 3}명`;
+                const row = document.createElement('tr');
+                row.innerHTML = `<td><strong>${batch.date}</strong></td><td>${batch.jewelIcon} ${batch.jewelName} (${batch.count}개)</td><td>${displayedNames}</td><td class="clickable-reason" onclick="toggleReasonText(this, '${batch.reason.replace(/'/g, "\\'")}')"><span class="ellipsis-text">${batch.reason}</span></td><td><button class="btn-row-delete" onclick="undoEntireBatch('${batch.batchId}')">전체 취소</button></td>`;
+                tbody.appendChild(row);
+            });
+            document.getElementById('undoManagerModal').style.display = 'flex';
+        }
+        function toggleReasonText(cellElement, fullText) { const span = cellElement.querySelector('span'); if (span.classList.contains('ellipsis-text')) { span.className = 'full-text'; span.innerText = fullText; } else { span.className = 'ellipsis-text'; span.innerText = fullText; } }
+        function undoEntireBatch(batchId) { if(confirm('일괄 회수하시겠습니까?')) { students.forEach(s => { s.inventory = s.inventory.filter(j => j.batchId !== batchId); }); batchHistory = batchHistory.filter(b => b.batchId !== batchId); renderStudents(); openUndoManagerModal(); } }
+        
+        function openAllQrModal() {
+            const grid = document.getElementById('qrGrid'); grid.innerHTML = '';
+            // 메인에 보이는(숨겨지지 않은) 학생들의 QR만 대장에 연동되도록 필터 처리
+            students.forEach(s => {
+                if(s.hidden) return;
+                const individualStudentUrl = `https://wanxod.github.io/hifive2026205_praise/student_view.html?id=${s.id}`;
+                const qrGeneratorApi = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(individualStudentUrl)}`;
+                grid.innerHTML += `<div class="qr-card-box"><div class="qr-student-name-text">${s.id}.${s.name}</div><img src="${qrGeneratorApi}" class="qr-display-img"></div>`;
+            });
+            document.getElementById('qrModal').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
